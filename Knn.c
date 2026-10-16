@@ -95,12 +95,17 @@ int DataForecast(int K, SampleData in, SampleData *train, int nt)
     distance[it].number = train[it].number;
   }
   /*给计算的距离排序(选择排序)*/
-  int predict = 0;
   SelectSort(distance, nt);
+  /*K个最近邻多数表决，平票时取距离最近的邻居的类别*/
+  int votes[TRAINING_COUNT] = {0};
   for(i=0; i<K; i++) {
-    predict += distance[i].number;
+    votes[distance[i].number] ++;
   }
-  return (int)(predict/K);
+  int best = distance[0].number;
+  for(i=0; i<TRAINING_COUNT; i++) {
+    if(votes[i] > votes[best]) best = i;
+  }
+  return best;
 }
 
 /*用测试数据集进行测试*/
@@ -151,7 +156,7 @@ void KnnDatasetClassification(int K)
   int CorrectCount[TRAINING_COUNT] = {0};
   int itrain, itest, predict;
   for(itest=0; itest < TEST_SIZE; itest++) {
-    predict = DataForecast(K, pSampleTrain_t[itest], pSampleTrain_t, TRAINING_SIZE);
+    predict = DataForecast(K, pSampleDataTest_t[itest], pSampleTrain_t, TRAINING_SIZE);
     //printf("%d-%d\n",predict, Dtest[itest].number);
 
     /*给预测准确的进行计数*/
